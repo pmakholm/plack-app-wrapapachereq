@@ -4,7 +4,7 @@
 use Module::Build;
 
 my $build = Module::Build->new(
-    module_name => 'Plack::Middleware::ApacheRequestRec',
+    module_name => 'Plack::App::WrapApacheReq',
 
     requires    => {
         'Plack'      => 0,

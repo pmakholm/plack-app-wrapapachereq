@@ -1,21 +1,25 @@
-package Plack::Middleware::ApacheRequestRec;
+package Plack::App::WrapApacheReq;
 
-use Plack::Util::Accessor qw( dir_config );
-use Plack::Middleware::ApacheRequestRec::FakeRequest;
-use parent qw( Plack::Middleware );
+use Plack::Util;
+use Plack::Util::Accessor qw( handler dir_config );
+use Plack::App::WrapApacheReq::FakeRequest;
+use parent qw( Plack::Component );
+
+use Carp;
+use Scalar::Util qw( blessed );
 
 our $VERSION = 0.1;
 
 sub call {
     my ($self, $env) = @_;
 
-    my $fake_req = Plack::Middleware::ApacheRequestRec::FakeRequest->new(
+    my $fake_req = Plack::App::WrapApacheReq::FakeRequest->new(
         $env,
         dir_config => $self->dir_config,
     );
     $fake_req->status( 200 );
 
-    my $result   = $self->app->handler( $fake_req ); # App is a mod_perl2 handler and not a PSGI APP.
+    my $result   = $self->handler->handler( $fake_req ); # Yikes
     
     if ( $result != OK ) {
         $fake_req->status( $result );    
@@ -24,28 +28,38 @@ sub call {
     return $fake_req->finalize;
 }
 
+sub prepare_app {
+    my $self    = shift;
+    my $handler = $self->handler;
+
+    carp "handler not defined" unless defined $handler;
+
+    $handler = Plack::Util::load_class( $handler ) unless blessed $handler;
+    $self->handler( $handler );
+
+    return;
+}
+
 1;
 
 __END__
 
 =head1 NAME
 
-Plack::Middleware::ApacheRequestRec - Wrapping mod_perl2 applications in Plack
+Plack::App::WrapApacheReq - Wrapping mod_perl2 applications in Plack
 
 =head1 SYNOPSIS
 
-  use Plack::Builder;
-  use My::ApacheHandler;
+  use Plack::App::WrapApacheReq;
 
-  builder {
-      enable "ApacheRequestRec", dir_config => { ... };
-
-      "My::ApacheHandler";
-  }
+  my $app = Plack::App::WrapApacheReq->new( 
+    handler    => "My::ResponseHandler"
+    dir_config => { ... }
+  )->to_app;    
 
 =head1 DESCRIPTION
 
-Plack::Middleware::ApacheRequestRec transforms a mod_perl2 application into
+Plack::App::WrapApacheReq transforms a mod_perl2 application into
 a PSGI application
 
 =head1 NOTICE
@@ -56,8 +70,15 @@ added on a need to have basis.
 
 =head1 CONFIGURATION
 
-This Middleware module takes a single parameter for us with the dir_config
-method.
+=over 4
+
+=item handler (required)
+
+=item dir_config
+
+Hash used to resolve $req->dir_config() requests
+
+=back
 
 =head1 APACHE METHODS
 

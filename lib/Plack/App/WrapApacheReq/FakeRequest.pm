@@ -1,4 +1,4 @@
-package Plack::Middleware::ApacheRequestRec::FakeRequest;
+package Plack::App::WrapApacheReq::FakeRequest;
 
 use APR::Pool;
 use APR::Table;
