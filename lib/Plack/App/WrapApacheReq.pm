@@ -14,7 +14,7 @@ sub call {
     my ($self, $env) = @_;
 
     my $fake_req = Plack::App::WrapApacheReq::FakeRequest->new(
-        $env,
+        env => $env,
         dir_config => $self->dir_config,
     );
     $fake_req->status( 200 );

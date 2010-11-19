@@ -1,79 +1,119 @@
 package Plack::App::WrapApacheReq::FakeRequest;
 
+use Moose;
+
 use APR::Pool;
 use APR::Table;
 
 use Plack::Request;
+use Plack::Response;
 
-sub new {
-    my ($class, $env, %args) = @_;
+# Plack related attributes:
+has env => (
+    is       => 'ro',
+    isa      => 'HashRef[Any]',
+    required => 1,
+);
 
-    my $preq = Plack::Request->new( $env );
-    my $pool = APR::Pool->new();
+has plack_request => (
+    is         => 'ro',
+    isa        => 'Plack::Request',
+    lazy_build => 1,
+    handles    => {
+        method       => 'method',
+        unparsed_uri => 'request_uri',
+        uri          => 'path',
+        user         => 'user',
+    },
+);
 
-    my $self = {
-        # Plack
-        request    => $preq,
-        response   => $preq->new_response,
+has plack_response => (
+    is         => 'ro',
+    isa        => 'Plack::Response',
+    lazy_build => 1,
+    handles    => {
+        content_type     => 'content_type',
+        content_encoding => 'content_encoding',
+        status           => 'status',
+    },
+);
 
-        # Apache
-        pool           => $pool,
-        headers_in     => APR::Table::make($pool, 64),
-        headers_out    => APR::Table::make($pool, 64),
-        subprocess_env => APR::Table::make($pool, 64),
+# Apache related attributes
+has _apr_pool => (
+    is         => 'ro',
+    isa        => 'APR::Pool',
+    lazy_build => 1,
+);
 
-        content        => [],
-        dir_config     => $args{dir_config} // {},
-    };
+has headers_in => (
+    is         => 'ro',
+    isa        => 'APR::Table',
+    lazy_build => 1,
+);
 
-    bless $self, $class;
+has headers_out => (
+    is         => 'ro',
+    isa        => 'APR::Table',
+    lazy_build => 1,
+);
+
+has subprocess_env => (
+    is         => 'ro',
+    isa        => 'APR::Table',
+    lazy_build => 1,
+);
+
+has dir_config => (
+    isa     => 'HashRef[Any]',
+    traits  => ['Hash'],
+    default => sub { {} },
+    handles => {
+        dir_config => 'accessor'
+    }
+);
+
+# builders
+sub _build_plack_request  { return Plack::Request->new( shift->env ) }
+sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
+sub _build__apr_pool      { return APR::Pool->new() }
+sub _build_subprocess_env { return APR::Table::make( shift->_apr_pool, 64 ) }
+sub _build_headers_out    { return APR::Table::make( shift->_apr_pool, 64 ) }
+
+sub _build_headers_in { 
+    my $self  = shift;
+    my $table = APR::Table::make( $self->_apr_pool, 64 );
+
+    $self->plack_request->headers->scan( sub {
+        $table->add( @_ );
+    } );
+
+   return $table;
 }
 
-# Plack interface:
-sub plack_request  { $_[0]->{request}  }
-sub plack_response { $_[0]->{response} }
-
+# Plack methods
 sub finalize { 
     my $self     = shift;
     my $response = $self->plack_response;
 
-    $self->{headers_out}->do( sub {
-        $response->header( @_ );
-    } );
-
-    $response->body( $self->{content} );
+    # XXX Why does I suddenly need a filter to supress 'Use of uninitialized value in subroutine entry'
+    $self->headers_out->do( sub { $response->header( @_ ) }, sub { 1 } );
 
     return $response->finalize;
 };
 
-# Apache interface:
-sub headers_in     { $_[0]->{headers_in} }
-sub headers_out    { $_[0]->{headers_in} }
-sub subprocess_env { $_[0]->{subprocess_env} }
-
-sub content_type     { shift->{response}->content_type( @_ ) }
-sub content_encoding { shift->{response}->content_encoding( @_ ) }
-sub status           { shift->{response}->status( @_ ) }
-sub log_reason       { 1 }; # TODO!
-
-sub method       { $_[0]->{request}->method }
-sub unparsed_uri { $_[0]->{request}->request_uri }
-sub uri          { $_[0]->{request}->path } 
-sub user         { $_[0]->{request}->user }
-
-sub dir_config   { $_[0]->{dir_config}->{$_[1]} }
-
+# Appache methods
+sub log_reason { 1 } # TODO
 sub hostname {
     my $self = shift;
 
-    return $self->{request}->env->{SERVER_NAME};
+    return $self->env->{SERVER_NAME};
 }
 
 sub read {
     my $self = shift;
     my ($buffer, $length, $offset) = @_; # ... but use $_[0] for buffer
 
-    my $request = $self->{request};
+    my $request = $self->plack_request;
 
     # Is this needed? Intrudes on a Plack::Request private methodf...
     unless ($request->env->{'psgix.input.buffered'}) {
@@ -91,10 +131,10 @@ sub read {
 sub print {
     my $self = shift;
 
-    my $sent = 0;
+    my $length = 0;
     for (@_) {
-        push @{ $self->{content} }, $_;
-        $sum += length;
+        $self->_add_content($_);
+        $length += length;
     }
 
     return $length;
@@ -103,16 +143,25 @@ sub print {
 sub write {
     my ($self, $buffer, $length, $offset) = @_;
 
-    if ($lenght == -1) {
-        push @{ $self->{content} }, $buffer;
+    if (defined $length && $length == -1) {
+        $self->_add_content($buffer);
         return length $buffer;
     }
 
     my $output = substr $buffer, $offset // 0, $length // length $buffer;
 
-    push @{ $self->{content} }, $output;
+    $self->_add_content($output);
     
     return length $output;
 }
+
+sub _add_content {
+    my $self = shift;
+
+    push @{ $self->plack_response->body }, @_;
+}
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
 
 1;
