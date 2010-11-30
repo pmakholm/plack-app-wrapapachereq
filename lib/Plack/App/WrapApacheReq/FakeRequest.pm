@@ -59,7 +59,7 @@ has headers_out => (
     lazy_build => 1,
 );
 
-has subprocess_env => (
+has _subprocess_env => (
     is         => 'ro',
     isa        => 'APR::Table',
     lazy_build => 1,
@@ -85,8 +85,17 @@ has location => (
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
 sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
 sub _build__apr_pool      { return APR::Pool->new() }
-sub _build_subprocess_env { return APR::Table::make( shift->_apr_pool, 64 ) }
 sub _build_headers_out    { return APR::Table::make( shift->_apr_pool, 64 ) }
+
+sub _build__subprocess_env { 
+    my $self  = shift;
+    my $env   = $self->env;
+    my $table = APR::Table::make( $self->_apr_pool, 64 );
+
+    $table->add( $_ => $env->{$_} ) for grep { /^[_A-Z]+$/ } keys %$env;
+
+    return $table;
+}
 
 sub _build_headers_in { 
     my $self  = shift;
@@ -115,6 +124,25 @@ sub hostname {
     my $self = shift;
 
     return $self->env->{SERVER_NAME};
+}
+
+sub subprocess_env {
+    my $self = shift;
+
+    if (@_ == 1) {
+        return $self->_subporcess_env->get( @_ );
+    }
+
+    if (@_ == 2) {
+        return $self->_subprocess_env->set( @_ );
+    }
+
+    if (defined wantarray) {
+        return $self->_subprocess_env;
+    }
+
+    $self->_subprocess_env->do( sub { $ENV{ $_[0] } = $_[1]; 1 } );
+    return;
 }
 
 sub pnotes {
