@@ -11,6 +11,13 @@ my $build = Module::Build->new(
         'APR::Pool'  => 0,
         'APR::Table' => 0,
     },
+
+    meta_merge => {
+        resources => {
+            repository => 'http://github.com/pmakholm/plack-app-wrapapachereq/tree/master',
+        }
+    },
 );
+
 $build->create_build_script;
 

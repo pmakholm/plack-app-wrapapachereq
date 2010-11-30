@@ -1,4 +1,9 @@
 Build.PL
-lib/Plack/Middleware/ApacheRequestRec.pm
-lib/Plack/Middleware/ApacheRequestRec/FakeRequest.pm
+Changes
+examples/generic.psgi
+examples/simple.psgi
+examples/wrapwrap.psgi
+lib/Plack/App/WrapApacheReq.pm
+lib/Plack/App/WrapApacheReq/FakeRequest.pm
 MANIFEST			This list of files
+META.yml
