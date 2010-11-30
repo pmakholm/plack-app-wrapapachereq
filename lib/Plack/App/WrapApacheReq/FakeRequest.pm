@@ -8,6 +8,8 @@ use APR::Table;
 use Plack::Request;
 use Plack::Response;
 
+my $NS = "plack.app.wrapapachereq";
+
 # Plack related attributes:
 has env => (
     is       => 'ro',
@@ -72,6 +74,13 @@ has dir_config => (
     }
 );
 
+has location => (
+    is      => 'rw',
+    isa     => "Str",
+    default => '/',
+);
+
+
 # builders
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
 sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
@@ -95,8 +104,7 @@ sub finalize {
     my $self     = shift;
     my $response = $self->plack_response;
 
-    # XXX Why does I suddenly need a filter to supress 'Use of uninitialized value in subroutine entry'
-    $self->headers_out->do( sub { $response->header( @_ ) }, sub { 1 } );
+    $self->headers_out->do( sub { $response->header( @_ ); 1 } );
 
     return $response->finalize;
 };
@@ -107,6 +115,30 @@ sub hostname {
     my $self = shift;
 
     return $self->env->{SERVER_NAME};
+}
+
+sub pnotes {
+    my $self = shift;
+    my $key  = shift;
+    my $old = $self->env->{$NS.'.pnotes'}->{$key};
+
+    if (@_) {
+        $self->env->{$NS.'.pnotes'}->{$key} = shift;
+    }
+
+    return $old;
+}
+
+sub notes {
+    my $self = shift;
+    my $key  = shift;
+    my $old = $self->env->{$NS.'.notes'}->{$key};
+
+    if (@_) {
+        $self->env->{$NS.'.notes'}->{$key} = "".shift;
+    }
+
+    return $old;
 }
 
 sub read {
@@ -159,6 +191,10 @@ sub _add_content {
     my $self = shift;
 
     push @{ $self->plack_response->body }, @_;
+}
+
+sub rflush {
+    1;
 }
 
 no Moose;
