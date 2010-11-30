@@ -4,6 +4,7 @@ use Plack::Util;
 use Plack::Util::Accessor qw( handler dir_config );
 use Plack::App::WrapApacheReq::FakeRequest;
 use parent qw( Plack::Component );
+use attributes;
 
 use Carp;
 use Scalar::Util qw( blessed );
@@ -19,7 +20,22 @@ sub call {
     );
     $fake_req->status( 200 );
 
-    my $result   = $self->handler->handler( $fake_req ); # Yikes
+
+    my $handler;
+    if ( blessed $self->handler ) {
+        $handler = sub { $self->handler->handler( $fake_req ) };
+    } else {
+        my $class   = $self->handler;
+        my $method = eval { $class->can("handler") };
+
+        if ( grep { $_ eq 'method' } attributes::get($method) ) {
+            $handler = sub { $class->$method( $fake_req ) };
+        } else {
+            $handler = $method;
+        }
+    }
+
+    my $result = $handler->( $fake_req ); 
     
     if ( $result != OK ) {
         $fake_req->status( $result );    
