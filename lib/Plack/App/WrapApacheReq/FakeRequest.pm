@@ -36,6 +36,7 @@ has plack_response => (
     isa        => 'Plack::Response',
     lazy_build => 1,
     handles    => {
+        set_content_length => 'content_length',
         content_type     => 'content_type',
         content_encoding => 'content_encoding',
         status           => 'status',
