@@ -5,6 +5,8 @@ use Moose;
 use APR::Pool;
 use APR::Table;
 
+use HTTP::Status qw(:is);
+
 use Plack::Request;
 use Plack::Response;
 
@@ -59,6 +61,12 @@ has headers_out => (
     lazy_build => 1,
 );
 
+has err_headers_out => (
+    is         => 'ro',
+    isa        => 'APR::Table',
+    lazy_build => 1,
+);
+
 has _subprocess_env => (
     is         => 'ro',
     isa        => 'APR::Table',
@@ -86,6 +94,7 @@ sub _build_plack_request  { return Plack::Request->new( shift->env ) }
 sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
 sub _build__apr_pool      { return APR::Pool->new() }
 sub _build_headers_out    { return APR::Table::make( shift->_apr_pool, 64 ) }
+sub _build_err_headers_out{ return APR::Table::make( shift->_apr_pool, 64 ) }
 
 sub _build__subprocess_env { 
     my $self  = shift;
@@ -113,7 +122,8 @@ sub finalize {
     my $self     = shift;
     my $response = $self->plack_response;
 
-    $self->headers_out->do( sub { $response->header( @_ ); 1 } );
+    $self->headers_out->do( sub { $response->header( @_ ); 1 } ) if is_success( $self->status() );
+    $self->err_headers_out->do( sub { $response->header( @_ ); 1 } );
 
     return $response->finalize;
 };
