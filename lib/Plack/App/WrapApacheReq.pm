@@ -103,24 +103,35 @@ The following methods from L<Apache2::RequestRec> and mixins are supported:
 =over 4
 
 =item headers_in
+
 =item headers_out
+
 =item subprecess_env
+
 =item dir_config
 
-
 =item method
+
 =item unparsed_uri
+
 =item uri
+
 =item user
+
 =item hostname
 
 =item content_type
+
 =item content_encoding
+
 =item status
+
 =item log_reason (implemented as a no-op)
 
 =item read
+
 =item print
+
 =item write
 
 =back
