@@ -1,0 +1,21 @@
+Running legacy mod_perl with Plack
+==================================
+
+Duration: 40 minutes
+Target audience: Intermediate
+Tags: plack web webserver apache
+
+
+Using mod_perl had some benefits over plain CGI.pm. You got some sort of
+persistence and a tight integration with Apache. Unfortunately you got a tight
+integration with Apache. This makes mod_perl have some obscure quirks and can
+make mod_perl applications hard to test and debug.
+
+Today Plack/PSGI provides a nice layer between the web server and your code.
+This is great for new projects, but what about old legacy code tightly
+integrated with mod_perl's request object?
+
+On way would be to fake the request object on top of Plack. This provides the
+ability to run your mod_perl application with any Plack capable webserver
+togeter with generic Plack::Middleware layers.
+
