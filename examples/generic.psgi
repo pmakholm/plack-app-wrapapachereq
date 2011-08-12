@@ -56,7 +56,7 @@ builder {
     enable $setup;
 
     Plack::App::FakeApache->new(
-        handler    => $handler
+        handler    => $handler,
         dir_config => { Ping => "Pong" },
     )->to_app;
 }
