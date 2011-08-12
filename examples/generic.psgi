@@ -28,7 +28,7 @@ my $hostname  = "localhost";            # If defined this overrules the plackup 
 #
 
 use Plack::Builder;
-use Plack::App::WrapApacheReq;
+use Plack::App::FakeApache;
 
 my $profiling = defined( $Devel::NYTProf::VERSION );
 
@@ -55,7 +55,7 @@ builder {
     enable "Auth::Basic", authenticator => sub { 1 };
     enable $setup;
 
-    Plack::App::WrapApacheReq->new(
+    Plack::App::FakeApache->new(
         handler    => $handler
         dir_config => { Ping => "Pong" },
     )->to_app;

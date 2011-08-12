@@ -3,7 +3,7 @@ Changes
 examples/generic.psgi
 examples/simple.psgi
 examples/wrapwrap.psgi
-lib/Plack/App/WrapApacheReq.pm
-lib/Plack/App/WrapApacheReq/FakeRequest.pm
+lib/Plack/App/FakeApache.pm
+lib/Plack/App/FakeApache/FakeRequest.pm
 MANIFEST			This list of files
 META.yml

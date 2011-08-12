@@ -1,4 +1,4 @@
-Changes for Plack::App::WrapApacheReq
+Changes for Plack::App::FakeApache
 
 0.01 - Tue Nov 30 17:02:06 CET 2010
         * Initial release

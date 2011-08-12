@@ -6,9 +6,9 @@
 use strict;
 use warnings;
 
-use Plack::App::WrapApacheReq;
+use Plack::App::FakeApache;
 
-Plack::App::WrapApacheReq->new(
+Plack::App::FakeApache->new(
     handler    => 'Plack::Handler::Apache2',
     dir_config => {
         psgi_app => 'simple.psgi',

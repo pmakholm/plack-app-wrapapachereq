@@ -1,4 +1,4 @@
-package Plack::App::WrapApacheReq::FakeRequest;
+package Plack::App::FakeApache::Request;
 
 use Moose;
 

@@ -1,8 +1,8 @@
-package Plack::App::WrapApacheReq;
+package Plack::App::FakeApache;
 
 use Plack::Util;
 use Plack::Util::Accessor qw( handler dir_config );
-use Plack::App::WrapApacheReq::FakeRequest;
+use Plack::App::FakeApache::Request;
 use parent qw( Plack::Component );
 use attributes;
 
@@ -14,7 +14,7 @@ our $VERSION = 0.01;
 sub call {
     my ($self, $env) = @_;
 
-    my $fake_req = Plack::App::WrapApacheReq::FakeRequest->new(
+    my $fake_req = Plack::App::FakeApache::Request->new(
         env => $env,
         dir_config => $self->dir_config,
     );
@@ -62,20 +62,20 @@ __END__
 
 =head1 NAME
 
-Plack::App::WrapApacheReq - Wrapping mod_perl2 applications in Plack
+Plack::App::FakeApache - Wrapping mod_perl2 applications in Plack
 
 =head1 SYNOPSIS
 
-  use Plack::App::WrapApacheReq;
+  use Plack::App::FakeApache;
 
-  my $app = Plack::App::WrapApacheReq->new( 
+  my $app = Plack::App::FakeApache->new( 
     handler    => "My::ResponseHandler"
     dir_config => { ... }
   )->to_app;    
 
 =head1 DESCRIPTION
 
-Plack::App::WrapApacheReq transforms a mod_perl2 application into
+Plack::App::FakeApache transforms a mod_perl2 application into
 a PSGI application
 
 =head1 NOTICE
