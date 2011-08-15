@@ -52,7 +52,6 @@ my $setup = sub {
         
 
 builder {
-    enable "Auth::Basic", authenticator => sub { 1 };
     enable $setup;
 
     Plack::App::FakeApache->new(
