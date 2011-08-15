@@ -4,6 +4,7 @@ examples/generic.psgi
 examples/simple.psgi
 examples/wrapwrap.psgi
 lib/Plack/App/FakeApache.pm
-lib/Plack/App/FakeApache/FakeRequest.pm
+lib/Plack/App/FakeApache/Request.pm
+lib/Plack/App/WrapApacheReq.pm
 MANIFEST			This list of files
 META.yml
