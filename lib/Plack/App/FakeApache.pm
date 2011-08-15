@@ -9,7 +9,7 @@ use attributes;
 use Carp;
 use Scalar::Util qw( blessed );
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub call {
     my ($self, $env) = @_;
