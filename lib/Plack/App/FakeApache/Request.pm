@@ -10,7 +10,7 @@ use HTTP::Status qw(:is);
 use Plack::Request;
 use Plack::Response;
 
-my $NS = "plack.app.wrapapachereq";
+my $NS = "plack.app.fakeapache";
 
 # Plack related attributes:
 has env => (
