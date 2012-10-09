@@ -9,6 +9,9 @@ use HTTP::Status qw(:is);
 
 use Plack::Request;
 use Plack::Response;
+use Plack::App::File;
+
+use Cwd qw(cwd);
 
 my $NS = "plack.app.fakeapache";
 
@@ -89,6 +92,17 @@ has location => (
     default => '/',
 );
 
+has filename => (
+    is         => 'rw',
+    isa        => 'Str|Undef',
+    lazy_build => 1,
+);
+
+has root => (
+    is         => 'rw',
+    isa        => 'Str',
+    default    => cwd(),
+);
 
 # builders
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
@@ -116,6 +130,18 @@ sub _build_headers_in {
     } );
 
    return $table;
+}
+
+sub _build_filename {
+    my $self = shift;
+
+    my $paf = Plack::App::File->new(
+        root => $self->root
+    );
+    my ($file, $path) = $paf->locate_file( $self->env );
+
+    return undef if ref $file;  # some sort of error
+    return $file;
 }
 
 # Plack methods
@@ -155,6 +181,11 @@ sub subprocess_env {
 
     $self->_subprocess_env->do( sub { $ENV{ $_[0] } = $_[1]; 1 } );
     return;
+}
+
+sub document_root {
+    my $self = shift;
+    return $self->root;
 }
 
 sub pnotes {

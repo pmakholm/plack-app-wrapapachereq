@@ -1,7 +1,7 @@
 package Plack::App::FakeApache;
 
 use Plack::Util;
-use Plack::Util::Accessor qw( handler dir_config );
+use Plack::Util::Accessor qw( handler dir_config root );
 use Plack::App::FakeApache::Request;
 use parent qw( Plack::Component );
 use attributes;
@@ -17,9 +17,9 @@ sub call {
     my $fake_req = Plack::App::FakeApache::Request->new(
         env => $env,
         dir_config => $self->dir_config,
+        root => $self->root,
     );
     $fake_req->status( 200 );
-
 
     my $handler;
     if ( blessed $self->handler ) {
@@ -109,6 +109,11 @@ added on a need to have basis.
 
 Hash used to resolve $req->dir_config() requests
 
+=item root
+
+Root directory of the file system (optional, defaults to the current
+working directory)
+
 =back
 
 =head1 APACHE METHODS
@@ -148,6 +153,8 @@ The following methods from L<Apache2::RequestRec> and mixins are supported:
 =item print
 
 =item write
+
+=item filename
 
 =back
 
