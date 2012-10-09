@@ -130,6 +130,7 @@ sub finalize {
 };
 
 # Appache methods
+# Apache methods
 sub log_reason { 1 } # TODO
 sub hostname {
     my $self = shift;
