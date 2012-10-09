@@ -155,8 +155,13 @@ sub finalize {
     return $response->finalize;
 };
 
-# Appache methods
 # Apache methods
+
+sub args {
+    my $self = shift;
+    return $self->plack_request->query_parameters
+}
+
 sub log_reason { 1 } # TODO
 sub hostname {
     my $self = shift;
