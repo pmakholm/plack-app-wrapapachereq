@@ -35,7 +35,11 @@ sub call {
         }
     }
 
+    # we wrap the call to $handler->( ... ) in tie statements so 
+    # prints, etc are caught and sent to the right place
+    tie *STDOUT, "Plack::App::FakeApache::Tie", $fake_req;
     my $result = $handler->( $fake_req ); 
+    untie *STDOUT;
     
     if ( $result != OK ) {
         $fake_req->status( $result );    
@@ -55,6 +59,17 @@ sub prepare_app {
 
     return;
 }
+
+package Plack::App::FakeApache::Tie;
+
+sub TIEHANDLE {
+    my $class = shift;
+    my $r = shift;
+    return bless \$r, $class;
+}
+
+sub PRINT  { my $r = ${ shift() }; $r->print(@_) }
+sub WRITE  { my $r = ${ shift() }; $r->write(@_) }
 
 1;
 
