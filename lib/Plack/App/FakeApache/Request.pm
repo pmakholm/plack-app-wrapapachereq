@@ -9,6 +9,10 @@ use HTTP::Status qw(:is);
 
 use Plack::Request;
 use Plack::Response;
+use Plack::App::File;
+
+use Plack::App::FakeApache::Request::Connection;
+use Cwd qw(cwd);
 
 my $NS = "plack.app.fakeapache";
 
@@ -89,6 +93,17 @@ has location => (
     default => '/',
 );
 
+has filename => (
+    is         => 'rw',
+    isa        => 'Str|Undef',
+    lazy_build => 1,
+);
+
+has root => (
+    is         => 'rw',
+    isa        => 'Str',
+    default    => cwd(),
+);
 
 # builders
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
@@ -118,6 +133,18 @@ sub _build_headers_in {
    return $table;
 }
 
+sub _build_filename {
+    my $self = shift;
+
+    my $paf = Plack::App::File->new(
+        root => $self->root
+    );
+    my ($file, $path) = $paf->locate_file( $self->env );
+
+    return undef if ref $file;  # some sort of error
+    return $file;
+}
+
 # Plack methods
 sub finalize { 
     my $self     = shift;
@@ -129,7 +156,13 @@ sub finalize {
     return $response->finalize;
 };
 
-# Appache methods
+# Apache methods
+
+sub args {
+    my $self = shift;
+    return $self->plack_request->query_parameters
+}
+
 sub log_reason { 1 } # TODO
 sub hostname {
     my $self = shift;
@@ -156,6 +189,11 @@ sub subprocess_env {
     return;
 }
 
+sub document_root {
+    my $self = shift;
+    return $self->root;
+}
+
 sub pnotes {
     my $self = shift;
     my $key  = shift;
@@ -178,6 +216,15 @@ sub notes {
     }
 
     return $old;
+}
+
+# this is strictly mocking Apache::Connection, and only partially
+sub connection {
+    my $self = shift;
+
+    return Plack::App::FakeApache::Request::Connection->new(
+        remote_ip => $self->plack_request->address,
+    );
 }
 
 sub read {
