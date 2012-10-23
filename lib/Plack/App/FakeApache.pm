@@ -17,11 +17,12 @@ sub call {
     my %args = (
         env => $env,
         dir_config => $self->dir_config,
-        root => $self->root,
     );
 
-    if ( $self->log ) {
-        my $logger  = $self->log;
+    $args{root} = $self->root if defined $self->root;
+
+    if ( $self->logger ) {
+        my $logger  = $self->logger;
         $args{$log} = $logger if blessed($log) and !$log->isa(IO::Handle);
         $args{$log} = Plack::FakeApache::Log->new( logger => sub { print $logger @_ } );
     }
