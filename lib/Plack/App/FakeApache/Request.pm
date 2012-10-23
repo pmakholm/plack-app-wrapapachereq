@@ -11,7 +11,7 @@ use Plack::Request;
 use Plack::Response;
 use Plack::App::File;
 
-use Plack::App::FakeApache::Request::Connection;
+use Plack::App::FakeApache::Connection;
 use Cwd qw(cwd);
 
 my $NS = "plack.app.fakeapache";
@@ -222,7 +222,7 @@ sub notes {
 sub connection {
     my $self = shift;
 
-    return Plack::App::FakeApache::Request::Connection->new(
+    return Plack::App::FakeApache::Connection->new(
         remote_ip => $self->plack_request->address,
     );
 }

@@ -1,4 +1,4 @@
-package Plack::App::FakeApache::Request::Connection;
+package Plack::App::FakeApache::Connection;
 
 use Moose;
 
