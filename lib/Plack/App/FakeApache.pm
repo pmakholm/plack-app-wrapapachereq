@@ -1,7 +1,7 @@
 package Plack::App::FakeApache;
 
 use Plack::Util;
-use Plack::Util::Accessor qw( handler dir_config );
+use Plack::Util::Accessor qw( handler dir_config root );
 use Plack::App::FakeApache::Request;
 use parent qw( Plack::Component );
 use attributes;
@@ -17,9 +17,9 @@ sub call {
     my $fake_req = Plack::App::FakeApache::Request->new(
         env => $env,
         dir_config => $self->dir_config,
+        root => $self->root,
     );
     $fake_req->status( 200 );
-
 
     my $handler;
     if ( blessed $self->handler ) {
@@ -35,7 +35,11 @@ sub call {
         }
     }
 
+    # we wrap the call to $handler->( ... ) in tie statements so 
+    # prints, etc are caught and sent to the right place
+    tie *STDOUT, "Plack::App::FakeApache::Tie", $fake_req;
     my $result = $handler->( $fake_req ); 
+    untie *STDOUT;
     
     if ( $result != OK ) {
         $fake_req->status( $result );    
@@ -55,6 +59,17 @@ sub prepare_app {
 
     return;
 }
+
+package Plack::App::FakeApache::Tie;
+
+sub TIEHANDLE {
+    my $class = shift;
+    my $r = shift;
+    return bless \$r, $class;
+}
+
+sub PRINT  { my $r = ${ shift() }; $r->print(@_) }
+sub WRITE  { my $r = ${ shift() }; $r->write(@_) }
 
 1;
 
@@ -93,6 +108,11 @@ added on a need to have basis.
 =item dir_config
 
 Hash used to resolve $req->dir_config() requests
+
+=item root
+
+Root directory of the file system (optional, defaults to the current
+working directory)
 
 =back
 
@@ -133,6 +153,8 @@ The following methods from L<Apache2::RequestRec> and mixins are supported:
 =item print
 
 =item write
+
+=item filename
 
 =back
 
