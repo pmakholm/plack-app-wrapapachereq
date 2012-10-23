@@ -1,7 +1,7 @@
 package Plack::App::FakeApache;
 
 use Plack::Util;
-use Plack::Util::Accessor qw( handler dir_config root );
+use Plack::Util::Accessor qw( handler dir_config root logger);
 use Plack::App::FakeApache::Request;
 use parent qw( Plack::Component );
 use attributes;
@@ -14,11 +14,19 @@ our $VERSION = 0.02;
 sub call {
     my ($self, $env) = @_;
 
-    my $fake_req = Plack::App::FakeApache::Request->new(
+    my %args = (
         env => $env,
         dir_config => $self->dir_config,
         root => $self->root,
     );
+
+    if ( $self->log ) {
+        my $logger  = $self->log;
+        $args{$log} = $logger if blessed($log) and !$log->isa(IO::Handle);
+        $args{$log} = Plack::FakeApache::Log->new( logger => sub { print $logger @_ } );
+    }
+
+    my $fake_req = Plack::App::FakeApache::Request->new(%args);
     $fake_req->status( 200 );
 
     my $handler;
@@ -113,6 +121,11 @@ Hash used to resolve $req->dir_config() requests
 
 Root directory of the file system (optional, defaults to the current
 working directory)
+
+=item logger
+
+The destination of the log messages (i.e. the errorlog). This should be a
+file handle
 
 =back
 

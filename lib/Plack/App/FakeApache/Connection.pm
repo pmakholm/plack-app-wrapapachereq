@@ -1,10 +1,17 @@
 package Plack::App::FakeApache::Connection;
 
 use Moose;
+use Plack::App::FakeApache::Log;
 
 has remote_ip => (
     is => 'rw',
     isa => 'Str',
+);
+
+has log => ( 
+    is => 'rw',
+    default => sub { Plack::App::FakeApache::Log->new() },
+    handles => [qw(log_error log_serror warn)],
 );
 
 no Moose;

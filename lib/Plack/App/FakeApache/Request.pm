@@ -12,6 +12,7 @@ use Plack::Response;
 use Plack::App::File;
 
 use Plack::App::FakeApache::Connection;
+use Plack::App::FakeApache::Log;
 use Cwd qw(cwd);
 
 my $NS = "plack.app.fakeapache";
@@ -45,6 +46,12 @@ has plack_response => (
         content_encoding => 'content_encoding',
         status           => 'status',
     },
+);
+
+has log => (
+    is      => 'rw',
+    default => sub { Plack::App::FakeApache::Log->new() },
+    handles => [ qw(log_error log_reason warn) ],
 );
 
 # Apache related attributes
@@ -163,7 +170,6 @@ sub args {
     return $self->plack_request->query_parameters
 }
 
-sub log_reason { 1 } # TODO
 sub hostname {
     my $self = shift;
 
@@ -224,6 +230,7 @@ sub connection {
 
     return Plack::App::FakeApache::Connection->new(
         remote_ip => $self->plack_request->address,
+        log       => $self->log,
     );
 }
 
