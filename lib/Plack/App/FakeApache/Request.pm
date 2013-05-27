@@ -31,7 +31,6 @@ has plack_request => (
     handles    => {
         method       => 'method',
         unparsed_uri => 'request_uri',
-        uri          => 'path',
         user         => 'user',
     },
 );
@@ -288,6 +287,14 @@ sub _add_content {
 
 sub rflush {
     1;
+}
+
+sub uri
+{
+    my $self = shift;
+    return $self->plack_request->uri->path;
+}
+
 }
 
 no Moose;
