@@ -14,6 +14,7 @@ use Plack::App::File;
 use Plack::App::FakeApache::Connection;
 use Plack::App::FakeApache::Log;
 use Cwd qw(cwd);
+use URI;
 
 my $NS = "plack.app.fakeapache";
 
@@ -295,6 +296,13 @@ sub uri
     return $self->plack_request->uri->path;
 }
 
+sub construct_url
+{
+    my $self = shift;
+    my $path = shift;
+    my $uri  = URI->new($self->plack_request->uri);
+    $uri->path($path) if $path;
+    return $uri->as_string;
 }
 
 no Moose;
