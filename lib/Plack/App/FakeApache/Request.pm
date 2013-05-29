@@ -180,7 +180,7 @@ sub subprocess_env {
     my $self = shift;
 
     if (@_ == 1) {
-        return $self->_subporcess_env->get( @_ );
+        return $self->_subprocess_env->get( @_ );
     }
 
     if (@_ == 2) {
