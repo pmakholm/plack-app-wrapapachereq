@@ -1,5 +1,8 @@
 package Plack::App::FakeApache;
 
+use strict;
+use warnings;
+
 use Plack::Util;
 use Plack::Util::Accessor qw( handler dir_config root logger);
 use Plack::App::FakeApache::Request;
@@ -8,6 +11,8 @@ use attributes;
 
 use Carp;
 use Scalar::Util qw( blessed );
+
+use Apache2::Const qw(OK);
 
 our $VERSION = 0.02;
 
@@ -23,8 +28,8 @@ sub call {
 
     if ( $self->logger ) {
         my $logger  = $self->logger;
-        $args{$log} = $logger if blessed($log) and !$log->isa(IO::Handle);
-        $args{$log} = Plack::FakeApache::Log->new( logger => sub { print $logger @_ } );
+        $args{log} = $logger if blessed($logger) and !$logger->isa('IO::Handle');
+        $args{log} ||= Plack::FakeApache::Log->new( logger => sub { print $logger @_ } );
     }
 
     my $fake_req = Plack::App::FakeApache::Request->new(%args);
