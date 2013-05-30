@@ -175,6 +175,14 @@ The following methods from L<Apache2::RequestRec> and mixins are supported:
 
 =item filename
 
+=item construct_url
+
+=item auth_type
+
+=item auth_name
+
+=item is_initial_req
+
 =back
 
 =head1 PLACK METHODS

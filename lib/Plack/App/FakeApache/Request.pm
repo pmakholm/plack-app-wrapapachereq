@@ -112,6 +112,22 @@ has root => (
     default    => cwd(),
 );
 
+has is_initial_req => (
+    is         => 'ro',
+    isa        => 'Bool',
+    default    => 1,
+);
+
+has auth_type => (
+    is         => 'ro',
+    isa        => 'Str',
+);
+
+has auth_name => (
+    is         => 'ro',
+    isa        => 'Str',
+);
+
 # builders
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
 sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
