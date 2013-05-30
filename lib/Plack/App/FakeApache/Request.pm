@@ -167,7 +167,7 @@ sub finalize {
 
 sub args {
     my $self = shift;
-    return $self->plack_request->query_parameters
+    return $self->plack_request->env->{QUERY_STRING};
 }
 
 sub hostname {
