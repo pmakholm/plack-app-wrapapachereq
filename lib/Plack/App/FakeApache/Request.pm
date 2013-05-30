@@ -13,6 +13,7 @@ use Plack::App::File;
 
 use Plack::App::FakeApache::Connection;
 use Plack::App::FakeApache::Log;
+use Plack::App::FakeApache::Server;
 use Cwd qw(cwd);
 use URI;
 
@@ -52,6 +53,11 @@ has log => (
     is      => 'rw',
     default => sub { Plack::App::FakeApache::Log->new() },
     handles => [ qw(log_error log_reason warn) ],
+);
+
+has server => (
+    is      => 'rw',
+    default => sub { Plack::App::FakeApache::Server->new() },
 );
 
 # Apache related attributes
