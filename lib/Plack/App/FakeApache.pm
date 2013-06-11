@@ -107,6 +107,18 @@ sub prepare_app {
 
     carp "handler or response_handler not defined" unless $self->response_handler;
 
+	# Workaround for mod_perl handlers doing CGI->new($r). CGI doesn't
+	# know our fake request class, so we hijack CGI->new() and explicitly
+	# pass the request query string instead...
+	my $new = CGI->can('new');
+	no warnings qw(redefine);
+	*CGI::new = sub {
+		if (blessed($_[1]) and $_[1]->isa('Plack::App::FakeApache::Request'))
+		{
+			return $new->(CGI => $_[1]->env->{QUERY_STRING} || $_[1]->plack_request->content);
+		}
+		return $new->(@_);
+	};
 
     return;
 }
