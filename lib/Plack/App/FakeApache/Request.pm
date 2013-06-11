@@ -13,7 +13,9 @@ use Plack::App::File;
 
 use Plack::App::FakeApache::Connection;
 use Plack::App::FakeApache::Log;
+use Plack::App::FakeApache::Server;
 use Cwd qw(cwd);
+use URI;
 
 my $NS = "plack.app.fakeapache";
 
@@ -31,7 +33,6 @@ has plack_request => (
     handles    => {
         method       => 'method',
         unparsed_uri => 'request_uri',
-        uri          => 'path',
         user         => 'user',
     },
 );
@@ -52,6 +53,11 @@ has log => (
     is      => 'rw',
     default => sub { Plack::App::FakeApache::Log->new() },
     handles => [ qw(log_error log_reason warn) ],
+);
+
+has server => (
+    is      => 'rw',
+    default => sub { Plack::App::FakeApache::Server->new() },
 );
 
 # Apache related attributes
@@ -112,6 +118,22 @@ has root => (
     default    => cwd(),
 );
 
+has is_initial_req => (
+    is         => 'ro',
+    isa        => 'Bool',
+    default    => 1,
+);
+
+has auth_type => (
+    is         => 'ro',
+    isa        => 'Str',
+);
+
+has auth_name => (
+    is         => 'ro',
+    isa        => 'Str',
+);
+
 # builders
 sub _build_plack_request  { return Plack::Request->new( shift->env ) }
 sub _build_plack_response { return Plack::Response->new( 200, {}, [] ) }
@@ -167,7 +189,7 @@ sub finalize {
 
 sub args {
     my $self = shift;
-    return $self->plack_request->query_parameters
+    return $self->plack_request->env->{QUERY_STRING};
 }
 
 sub hostname {
@@ -180,7 +202,7 @@ sub subprocess_env {
     my $self = shift;
 
     if (@_ == 1) {
-        return $self->_subporcess_env->get( @_ );
+        return $self->_subprocess_env->get( @_ );
     }
 
     if (@_ == 2) {
@@ -288,6 +310,21 @@ sub _add_content {
 
 sub rflush {
     1;
+}
+
+sub uri
+{
+    my $self = shift;
+    return $self->plack_request->uri->path;
+}
+
+sub construct_url
+{
+    my $self = shift;
+    my $path = shift;
+    my $uri  = URI->new($self->plack_request->uri);
+    $uri->path($path) if $path;
+    return $uri->as_string;
 }
 
 no Moose;
