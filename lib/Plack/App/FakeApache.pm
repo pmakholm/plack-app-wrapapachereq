@@ -13,7 +13,7 @@ use Carp;
 use Scalar::Util qw( blessed );
 use Apache2::Const qw(OK DECLINED HTTP_OK HTTP_UNAUTHORIZED HTTP_NOT_FOUND);
 
-our $VERSION = 0.02;
+our $VERSION = 0.04;
 
 sub _get_phase_handlers
 {
