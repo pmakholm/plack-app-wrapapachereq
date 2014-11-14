@@ -1,5 +1,10 @@
 Changes for Plack::App::FakeApache
 
+0.05 - Allow Plack::App::FakeApache to use a subclass of
+       Plack::App::FakeApache::Request 
+     - Introduce parts of CGI::Emulate::PSGI to deal with ENV and
+       STDIN problems.
+
 0.04 - Fix README in release and add files missing from 0.03 CPAN Dist 
        (forgot ./Build manifest)
 
