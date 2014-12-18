@@ -1,4 +1,6 @@
 Changes for Plack::App::FakeApache
+0.07 - Change repo address
+0.06 - Support for a minimal shim over exit()
 
 0.05 - Allow Plack::App::FakeApache to use a subclass of
        Plack::App::FakeApache::Request 

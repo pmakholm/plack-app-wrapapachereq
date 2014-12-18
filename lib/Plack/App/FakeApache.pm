@@ -1,5 +1,5 @@
 package Plack::App::FakeApache;
-
+use Try::Tiny;
 use strict;
 use warnings;
 
@@ -15,7 +15,7 @@ use Module::Load;
 use Scalar::Util qw( blessed );
 use Apache2::Const qw(OK DECLINED HTTP_OK HTTP_UNAUTHORIZED HTTP_NOT_FOUND);
 
-our $VERSION = 0.05;
+our $VERSION = 0.07;
 
 sub _get_phase_handlers
 {
@@ -50,7 +50,12 @@ sub _run_first
     my $status = OK;
     foreach my $handler ($self->_get_phase_handlers($phase))
     {
-        $status = $handler->($fake_req);
+        try {
+			$status = $handler->($fake_req);
+		}
+		  catch { 
+			  die $_ unless $_ =~ /^EXIT 0$/;
+		  };
         last if $status != DECLINED;
     }
     return (defined($status) and $status != DECLINED) ? $status : $fallback_status; # mod_perl seems to do this if all handlers decline
@@ -204,6 +209,11 @@ This is Proof of Concept code originating in the mocking code developed to
 test an internal very non-trivial mod_perl2 application. Features have been
 added on a need to have basis.
 
+This code has been extended to make a different non-trivial mod_perl
+app work under plack too.  If you need to use this module for serious
+work you will almost certainly need to read and modify the source.
+Contributions welcomed.
+
 =head1 CONFIGURATION
 
 *_handler arguments support multiple "stacked" handlers if passed as an arrayref.
@@ -322,8 +332,20 @@ Fills information into the response object and finalizes it.
 
 =back
 
+=head1 MOD_PERL OVERRIDES
+
+mod_perl overrides exit with L<ModPerl::Util>.  The way I've handled
+(kd) this was that in order to override the horrors of overriding
+CORE::GLOBAL::EXIT was to have a subroutine main::legacy_exit defined
+in the startup.pl or in the .psgi file which calls die "EXIT $number".
+Meanwhile this specific exception is ignored by
+Plack::APP::FakeApache.
+
+
 =head1 AUTHOR
 
 Peter Makholm, L<peter@makholm.net>
+
+Override subrequest, more cgi.pm support and exit support by Kieren Diment L<zarquon@cpan.org>.
 
 =cut
