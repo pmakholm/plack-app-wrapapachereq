@@ -232,7 +232,7 @@ Handlers for the respective request phases. Pass a blessed object, a class
 name or use the C<Class-E<gt>method> syntax. See the mod_perl docs for calling
 conventions.
 
-=request_class
+=item request_class
 
 If you want to subclass Plack::App::FakeApache::Request do so here.
 Make sure that your subclass inherits from
