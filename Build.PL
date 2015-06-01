@@ -10,11 +10,13 @@ my $build = Module::Build->new(
         'Plack'      => 0,
         'APR::Pool'  => 0,
         'APR::Table' => 0,
+        'CGI::Emulate::PSGI' => 0,
+        'Try::Tiny' => 0,
     },
 
     meta_merge => {
         resources => {
-            repository => 'http://github.com/pmakholm/plack-app-wrapapachereq/tree/master',
+            repository => 'http://github.com/singingfish/plack-app-wrapapachereq/tree/master',
         }
     },
 );
