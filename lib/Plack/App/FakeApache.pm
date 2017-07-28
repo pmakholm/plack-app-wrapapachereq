@@ -1,4 +1,5 @@
 package Plack::App::FakeApache;
+
 use Try::Tiny;
 use strict;
 use warnings;
@@ -13,8 +14,6 @@ use Carp;
 use Module::Load;
 use Scalar::Util qw( blessed );
 use Apache2::Const qw(OK DECLINED HTTP_OK HTTP_UNAUTHORIZED HTTP_NOT_FOUND);
-
-our $VERSION = 0.08;
 
 sub _get_phase_handlers
 {
