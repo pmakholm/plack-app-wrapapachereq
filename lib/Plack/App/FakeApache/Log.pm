@@ -1,6 +1,6 @@
 package Plack::App::FakeApache::Log;
 
-use Moose;
+use Moo;
 
 use Apache2::Const -compile => qw(:log);
 use APR::Const;

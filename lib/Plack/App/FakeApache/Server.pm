@@ -1,6 +1,6 @@
 package Plack::App::FakeApache::Server;
 
-use Moose;
+use Moo;
 
 use Plack::App::FakeApache::Log;
 
